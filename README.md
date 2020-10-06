@@ -1,5 +1,7 @@
 # test-async
 
+Enable all Actuator metrics:
+management.endpoints.web.exposure.include=*
 
 Start application:
 
@@ -17,9 +19,16 @@ sh start_prometheus_and_grafana.sh
 
 Application: http://localhost:8080/test
 
-Prometheus: http://localhost:/9090
+Prometheus: http://localhost:9090
 
 Grafana: http://localhost:3030
+
+ThreadDump: http://localhost:8080/actuator/threaddump
+
+HeapDump: http://localhost:8080/actuator/heapdump
+
+JVM-Dashboard: https://grafana.com/grafana/dashboards/4701
+
 
 **Jmeter Test:**
 
