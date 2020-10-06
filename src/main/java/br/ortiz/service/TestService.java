@@ -1,34 +1,48 @@
 package br.ortiz.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
 @Service
 public class TestService {
 
+    @Value("${url_async}")
+    private String urlAsync;
+
+    @Autowired
+    RestTemplate restTemplate;
+
     @Async
-    public CompletableFuture<String> asyncMethodWithReturnType() {
-        return CompletableFuture.supplyAsync(() -> {
-            System.out.println("Execute method asynchronously - " + Thread.currentThread().getName());
-            try {
-               Integer number = 1 + (int) (Math.random() * (5 + 1));
-               Thread.sleep(number * 1000);
-                return "hello world !!!!";
-            } catch (InterruptedException e) {
-            }
-            return null;
-        });
+    public CompletableFuture<String> asyncRestTemplateCall() {
+        ResponseEntity<String> response = restTemplate
+                .exchange(urlAsync, HttpMethod.GET, null, String.class);
+        return CompletableFuture.completedFuture(response.getBody());
     }
 
 
     public String sayHello() throws Exception {
-        final CompletableFuture<Void> voidCompletableFuture = CompletableFuture.allOf(
-                asyncMethodWithReturnType(),
-                asyncMethodWithReturnType(), asyncMethodWithReturnType(),
-                asyncMethodWithReturnType());
+        final CompletableFuture<String> call1 = asyncRestTemplateCall();
+        final CompletableFuture<String> call2 = asyncRestTemplateCall();
+        final CompletableFuture<String> call3 = asyncRestTemplateCall();
+        final CompletableFuture<String> call4 = asyncRestTemplateCall();
+        final CompletableFuture<String> call5 = asyncRestTemplateCall();
+        final CompletableFuture<Void> voidCompletableFuture = CompletableFuture.allOf(call1, call2, call3, call4, call5);
         voidCompletableFuture.get();
-        return "Hello";
+
+        final String return1 = call1.get();
+        final String return2 = call2.get();
+        final String return3 = call3.get();
+        final String return4 = call4.get();
+        final String return5 = call5.get();
+
+        return String.join(", ", Arrays.asList(return1, return2, return3, return4, return5));
     }
 }
